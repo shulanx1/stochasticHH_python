@@ -14,7 +14,10 @@ stochastic_HH2_matrix.py: two-state simplification of the matrix form above
 ### Installation ###
 
 Following package will be required
-*numpy
-*scipy
-*matplotlib
+
+numpy
+
+scipy
+
+matplotlib
 
