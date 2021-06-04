@@ -1,29 +1,20 @@
 # README #
 
-This README would normally document whatever steps are necessary to get your application up and running.
+Stochastic HH model solved with forward euler method.
 
-### What is this repository for? ###
+different methods used for:
 
-* Quick summary
-* Version
-* [Learn Markdown](https://bitbucket.org/tutorials/markdowndemo)
+stochastic_HH.py: Markov Chain C.C. Chow, J.A. White,Spontaneous action potentials due to channel fluctuations,Biophysical Journal,Volume 71, Issue 6,1996,Pages 3013-3021,ISSN 0006-3495,https://doi.org/10.1016/S0006-3495(96)79494-8.
 
-### How do I get set up? ###
+stocastic_HH_matrix.py: Orio P, Soudry D (2012) Simple, fast and accurate implementation of the diffusion approximation algorithm for stochastic ion channels with multiple states. PLoS One 7:e36670
 
-* Summary of set up
-* Configuration
-* Dependencies
-* Database configuration
-* How to run tests
-* Deployment instructions
+stochastic_HH2_matrix.py: two-state simplification of the matrix form above
 
-### Contribution guidelines ###
 
-* Writing tests
-* Code review
-* Other guidelines
+### Installation ###
 
-### Who do I talk to? ###
+Following package will be required
+*numpy
+*scipy
+*matplotlib
 
-* Repo owner or admin
-* Other community or team contact
