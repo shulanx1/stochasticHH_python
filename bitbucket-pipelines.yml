@@ -1,0 +1,11 @@
+pipelines:
+  default:
+    - step:
+        name: Sync GitHub Mirror
+        image: alpine/git:latest
+        clone:
+          enabled: false
+        script:
+          - git clone --bare git@bitbucket.org:ShulanX/stochastichh_python.git
+          - cd stochastichh_python.git
+          - git push --mirror git@github.com:shulanx1/stochasticHH_python.git
