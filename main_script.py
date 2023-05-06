@@ -27,7 +27,7 @@ import matplotlib.pyplot as plt
 import deterministic_HH
 import stocastic_HH
 import stochastic_HH_matrix
-import stochastic_HH3_matrix
+
 import stochastic_HH2_matrix
 import scipy.io as sio
 from scipy.stats import norm
@@ -112,15 +112,10 @@ def plot_stocastic(Vnmh, t,  Vna = 115, Vk = -12, gamma_K = 20e-9,gamma_Na = 20e
     vm = np.asarray(Vnmh[0])
     n = np.transpose(np.asarray(Vnmh[1]))
     mh = np.transpose(np.asarray(Vnmh[2]))
-    h = np.transpose(np.asarray(Vnmh[3]))
-    # i_na = gamma_Na/(NNa/D_Na)*mh[-1,:]*(vm-Vna)
-    # i_k = gamma_K/(NK/D_K)*n[-1,:]*(vm-Vk)
-    # g_na = gamma_Na/(NNa/D_Na)*mh[-1,:]
-    # g_k = gamma_K/(NK/D_K)*n[-1,:]
-    i_na = gamma_Na/(NNa/D_Na)*mh**3*h*(vm-Vna)
-    i_k = gamma_K/(NK/D_K)*n**4*(vm-Vk)
-    g_na = gamma_Na/(NNa/D_Na)*mh**3*h
-    g_k = gamma_K/(NK/D_K)*n
+    i_na = gamma_Na/(NNa/D_Na)*mh[-1,:]*(vm-Vna)
+    i_k = gamma_K/(NK/D_K)*n[-1,:]*(vm-Vk)
+    g_na = gamma_Na/(NNa/D_Na)*mh[-1,:]
+    g_k = gamma_K/(NK/D_K)*n[-1,:]
     fig = plt.figure(figsize = [8, 10])
     plt.subplot(3,1,1)
     plt.plot(t, vm)
@@ -188,81 +183,51 @@ def noisy_input(mu, sigma, tau, idx):
         conv_f = conv_f/np.sum(conv_f) #normalize
         wn_conv.append(np.convolve(wn[i,:], conv_f))
         wn_new.append(mu + (wn_conv[i][int(2e4):int(5e4)]-np.mean(wn_conv[i][int(2e4):int(5e4)]))*sigma/np.std(wn_conv[i][int(2e4):int(5e4)]))
-        # plt.figure()
-        # plt.plot(wn_new[i])
-    
+
     noise_i = np.asarray(wn_new)
-    
-    # # deterministic, noise u = 10, sigma = 7, tau = [1,3,5,10,15,20,25]
-    # # noise_i_dataset = sio.loadmat('E:\\Code\\stochastic HH model\\noise input\\white_noise_for_simulation.mat')
-    # # noise_i = noise_i_dataset['wn_new']
-    # # tau = noise_i_dataset['tau']
-    # Vnmh = []
-    # for i in range(noise_i.shape[0]):
-    #     IStim_Params = {
-    #         'stim_i': True,
-    #         'i_waveform' : noise_i[i,:],
-    #         }
-    #     y_rk, t = deterministic_HH.euler([deterministic_HH.vmp_hh,
-    #                                     deterministic_HH.np_hh,
-    #                                     deterministic_HH.mp_hh,
-    #                                     deterministic_HH.hp_hh],
-    #                                     start = 0, stop = 250, step = 0.01, initial_values = [0, 0, 0, 0],
-    #                                     **IStim_Params)
-    #     # plot_stimulation(y_rk, t, **IStim_Params)
-    #     # plot_deterministic(y_rk, t)
-    #     Vnmh.append(y_rk)
-    # data = {'Vnmh':Vnmh,
-    #         't':t,
-    #         'tau': tau,
-    #         'sigma': sigma,
-    #         'mu': mu,
-    #         'noise_i': noise_i}
-    # sio.savemat(('E:\\Code\\stochastic HH model\\result\\deterministic_noise_mu%d_sigma%d_%d.mat' %(mu, sigma, idx)),data)
-    
-    # stocastic, noise u = 10, sigma = 7, tau = [1,3,5,10,15,20,25]
+
     vm_all = []
     n_all = []
     mh_all = []
-    h_all = []
+    # h_all = []
     for i in range(noise_i.shape[0]):
         vm = []
         n = []
         mh = []
-        h = []
+        # h = []
         IStim_Params = {
             'stim_i': True,
             'i_waveform' : noise_i[i,:],
             }
         for j in range(10):
-            # y_rk, t = stochastic_HH_matrix.euler([stochastic_HH_matrix.vmp_hh,
-            #                                 stochastic_HH_matrix.np_hh,
-            #                                 stochastic_HH_matrix.mhp_hh],
-            #                                 start = 0, stop = 250, step = 0.01,
-            #                                 initial_values = [0.0, np.asarray([1,0,0,0,0]), np.asarray([1,0,0,0,0,0,0,0])],
-            #                                 **IStim_Params)
-            # vm.append(np.asarray(y_rk[0]))
-            # n.append(np.transpose(np.asarray(y_rk[1])))
-            # mh.append(np.transpose(np.asarray(y_rk[2])))
-            y_rk, t = stochastic_HH2_matrix.euler([stochastic_HH2_matrix.vmp_hh,
-                                stochastic_HH2_matrix.np_hh,
-                                stochastic_HH2_matrix.mp_hh,
-                                stochastic_HH2_matrix.hp_hh],
-                                start = 0, stop = 250, step = 0.01,
-                                initial_values = [0.0, 0, 0, 0],
-                                **IStim_Params)
+            y_rk, t = stochastic_HH_matrix.euler([stochastic_HH_matrix.vmp_hh,
+                                            stochastic_HH_matrix.np_hh,
+                                            stochastic_HH_matrix.mhp_hh],
+                                            start = 0, stop = 250, step = 0.01,
+                                            initial_values = [0.0, np.asarray([1,0,0,0,0]), np.asarray([1,0,0,0,0,0,0,0])],
+                                            **IStim_Params)
             vm.append(np.asarray(y_rk[0]))
-            n.append(np.asarray(y_rk[1]))
-            mh.append(np.asarray(y_rk[2]))
-            h.append(np.asarray(y_rk[3]))
+            n.append(np.transpose(np.asarray(y_rk[1])))
+            mh.append(np.transpose(np.asarray(y_rk[2])))
+            # y_rk, t = stochastic_HH2_matrix.euler([stochastic_HH2_matrix.vmp_hh,
+            #                     stochastic_HH2_matrix.np_hh,
+            #                     stochastic_HH2_matrix.mp_hh,
+            #                     stochastic_HH2_matrix.hp_hh],
+            #                     start = 0, stop = 250, step = 0.01,
+            #                     initial_values = [0.0, 0, 0, 0],
+            #                     **IStim_Params)
+            # vm.append(np.asarray(y_rk[0]))
+            # n.append(np.asarray(y_rk[1]))
+            # mh.append(np.asarray(y_rk[2]))
+            # h.append(np.asarray(y_rk[3]))
         vm_all.append(vm)
         n_all.append(n)
         mh_all.append(mh)
-        h_all.append(h)
+        # h_all.append(h)
     data = {'vm':vm_all,
             'n': n_all,
             'mh': mh_all,
-            'h': h_all,
+            # 'h': h_all,
             't':t,
             'sigma': sigma,
             'mu': mu,
@@ -277,11 +242,11 @@ y_rk, t = deterministic_HH.euler([deterministic_HH.vmp_hh,
                                     deterministic_HH.hp_hh], 
                                     start = 0, stop = 250, step = 0.01, initial_values = [0, 0, 0, 0])
 plot_deterministic(y_rk, t)
-# data = {'Vnmh':y_rk,
-#         't':t,
-#         'sigma':0,
-#         'mu':10}
-# sio.savemat(('E:\\Code\\stochastic HH model\\result\\deterministic_noise_mu%d_sigma%d_%d.mat.mat'%(10, 0, i)),data)
+data = {'Vnmh':y_rk,
+        't':t,
+        'sigma':0,
+        'mu':10}
+sio.savemat(('E:\\Code\\stochastic HH model\\result\\deterministic_noise_mu%d_sigma%d_%d.mat.mat'%(10, 0, i)),data)
 #%% stocastic step I = 10
 for j in range(6):
     vm = []
@@ -296,18 +261,16 @@ for j in range(6):
         vm.append(np.asarray(y_rk[0]))
         n.append(np.transpose(np.asarray(y_rk[1])))
         mh.append(np.transpose(np.asarray(y_rk[2])))
-        # plot_stocastic(y_rk, t)
+        plot_stocastic(y_rk, t)
     data = {'vm':[vm],
             'n': [n],
             'mh': [mh],
             't':t}
     sio.savemat(('E:\\Code\\stochastic HH model\\result\\stochastic_noise_mu%d_sigma%d_%d.mat'%(10, 0, j)),data)
 
-#%%
+#%% stichastic simplified matrix form, I = 10
 NNa = 12000
 NK = 3600
-# init_Na = np.asarray([1,0,0,0,0,0,0,0])#np.asarray([int(x) for x in NNa*np.asarray([0.0575,0.0032,6e-5,0.506,0.0849,0.0047,8.84e-5])])
-# init_K = np.asarray([1,0,0,0])#np.asarray([int(x) for x in NK*np.asarray([0.403,0.282,0.0875,0.01])])
 y_rk, t = stochastic_HH2_matrix.euler([stochastic_HH2_matrix.vmp_hh,
                                     stochastic_HH2_matrix.np_hh,
                                     stochastic_HH2_matrix.mp_hh,
@@ -326,44 +289,7 @@ tau = [1,3,5,10,15,20,25]
 
 for j in range(6):
     noisy_input(mu, sigma, tau, j)
-#%%
-# #%% Current stim
-# IStim_Params = {
-#         'stim_i': True,
-#         'stim_start' : 5,
-#         'stim_step' : 10,
-#         'stim_amp' : -50,
-#         }
-# y_rk, t = Demo_norder_functions.rk([Demo_norder_functions.vmp_hh, 
-#                                     Demo_norder_functions.np_hh, 
-#                                     Demo_norder_functions.mp_hh,
-#                                     Demo_norder_functions.hp_hh], 
-#                                     start = 0, stop = 20, step = 0.01, initial_values = [0, 0, 0, 0], 
-#                                     **IStim_Params)
-# # vm = np.transpose(np.asarray(y_rk))[0,:]
-# # plt.figure()
-# # plt.plot(t, vm)
-# demo_plot(y_rk, t)
-# demo_plot_stimulation(y_rk, t, **IStim_Params)
-# #%% Synaptic stim
-# GStim_Params = {
-#         'stim_g': True,
-#         'stim_start': 10,
-#         'tau': 3,
-#         'g_max': 2.5, 
-#         'Vg': -70,
-#         }
-# y_rk, t = Demo_norder_functions.rk([Demo_norder_functions.vmp_hh, 
-#                                     Demo_norder_functions.np_hh, 
-#                                     Demo_norder_functions.mp_hh,
-#                                     Demo_norder_functions.hp_hh], 
-#                                     start = 0, stop = 20, step = 0.01, initial_values = [0, 0, 0, 0], 
-#                                     **GStim_Params)
-# # vm = np.transpose(np.asarray(y_rk))[0,:]
-# # plt.figure()
-# # plt.plot(t, vm)
-# demo_plot(y_rk, t)
-# demo_plot_stimulation(y_rk, t, **GStim_Params)
+
 
     
     
