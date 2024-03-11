@@ -23,4 +23,8 @@ scipy
 
 matplotlib
 
+### Contact ###
+
+Please contact kjayant@purdue.edu with any questions.
+
 
