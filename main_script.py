@@ -20,12 +20,13 @@ list of unit and default parameters:
     gl_bar = 0.3mS/cm^2
 """
 import sys
-sys.path.insert(1, 'E:\Code\stochastic HH model')
+import os
+sys.path.insert(1, os.getcwd())
 
 import numpy as np
 import matplotlib.pyplot as plt
 import deterministic_HH
-import stocastic_HH
+import stochastic_HH
 import stochastic_HH_matrix
 
 import stochastic_HH2_matrix
@@ -171,7 +172,7 @@ def plot_stimulation(Vnmh, t, **kwargs):
     except KeyError:
         pass
 
-def noisy_input(mu, sigma, tau, idx):
+def noisy_input(mu = 10, sigma = 7, tau = 1, idx = 0, fld = os.getcwd()):
     rand_norm = norm
     rand_norm.random_state=RandomState(seed=None)
     wn = rand_norm.rvs(mu,sigma, size = [7, int(5e4)])
@@ -200,26 +201,15 @@ def noisy_input(mu, sigma, tau, idx):
             'i_waveform' : noise_i[i,:],
             }
         for j in range(10):
-            y_rk, t = stochastic_HH_matrix.euler([stochastic_HH_matrix.vmp_hh,
-                                            stochastic_HH_matrix.np_hh,
-                                            stochastic_HH_matrix.mhp_hh],
+            y_rk, t = stochastic_HH.euler([stochastic_HH.vmp_hh,
+                                            stochastic_HH.np_hh,
+                                            stochastic_HH.mhp_hh],
                                             start = 0, stop = 250, step = 0.01,
-                                            initial_values = [0.0, np.asarray([1,0,0,0,0]), np.asarray([1,0,0,0,0,0,0,0])],
+                                            initial_values = [0.0, np.asarray([3600,0,0,0,0]), np.asarray([12000,0,0,0,0,0,0,0])],
                                             **IStim_Params)
             vm.append(np.asarray(y_rk[0]))
             n.append(np.transpose(np.asarray(y_rk[1])))
             mh.append(np.transpose(np.asarray(y_rk[2])))
-            # y_rk, t = stochastic_HH2_matrix.euler([stochastic_HH2_matrix.vmp_hh,
-            #                     stochastic_HH2_matrix.np_hh,
-            #                     stochastic_HH2_matrix.mp_hh,
-            #                     stochastic_HH2_matrix.hp_hh],
-            #                     start = 0, stop = 250, step = 0.01,
-            #                     initial_values = [0.0, 0, 0, 0],
-            #                     **IStim_Params)
-            # vm.append(np.asarray(y_rk[0]))
-            # n.append(np.asarray(y_rk[1]))
-            # mh.append(np.asarray(y_rk[2]))
-            # h.append(np.asarray(y_rk[3]))
         vm_all.append(vm)
         n_all.append(n)
         mh_all.append(mh)
@@ -233,31 +223,84 @@ def noisy_input(mu, sigma, tau, idx):
             'mu': mu,
             'tau': tau,
             'noise_i': noise_i}
-    sio.savemat(('E:\\Code\\stochastic HH model\\result\\stochastic_matrix2state_noise_mu%d_sigma%d_%d.mat' %(mu, sigma, idx)),data)
+    result_folder = os.path.join(fld, "result")
+    if not os.path.exists(result_folder):
+        os.makedirs(result_folder)
+    sio.savemat(os.path.join(result_folder, 'stochastic_matrix2state_noise_mu%d_sigma%d_%d.mat' %(mu, sigma, idx)),data)
+
+def waveform_input(I, idx = 0, fld = os.getcwd()):
+    vm_all = []
+    n_all = []
+    mh_all = []
+    for i in range(I.shape[0]):
+        vm = []
+        n = []
+        mh = []
+
+        IStim_Params = {
+            'stim_i': True,
+            'i_waveform' : I[i,:],
+            'stim_start': 50,
+            }
+        for j in range(10):
+            y_rk, t = stochastic_HH.euler([stochastic_HH.vmp_hh,
+                                            stochastic_HH.np_hh,
+                                            stochastic_HH.mhp_hh],
+                                            start = 0, stop = 250, step = 0.01,
+                                            initial_values = [0.0, np.asarray([3600,0,0,0,0]), np.asarray([12000,0,0,0,0,0,0,0])],
+                                            **IStim_Params)
+            vm.append(np.asarray(y_rk[0]))
+            n.append(np.transpose(np.asarray(y_rk[1])))
+            mh.append(np.transpose(np.asarray(y_rk[2])))
+        vm_all.append(vm)
+        n_all.append(n)
+        mh_all.append(mh)
+
+    data = {'vm':vm_all,
+            'n': n_all,
+            'mh': mh_all,
+            't':t,
+            'I': I}
+    result_folder = os.path.join(fld, "result")
+    if not os.path.exists(result_folder):
+        os.makedirs(result_folder)
+    sio.savemat(os.path.join(result_folder, 'waveform_response_%d.mat'%idx),data)
+
 #%% deterministic, step I = 10uA/cm^2
-i = 0
+IStim_Params = {
+    'stim_i': True,
+    'i': 10,
+    }
 y_rk, t = deterministic_HH.euler([deterministic_HH.vmp_hh,
                                     deterministic_HH.np_hh, 
                                     deterministic_HH.mp_hh,
                                     deterministic_HH.hp_hh], 
-                                    start = 0, stop = 250, step = 0.01, initial_values = [0, 0, 0, 0])
+                                    start = 0, stop = 250, step = 0.01, initial_values = [0, 0, 0, 0], **IStim_Params)
 plot_deterministic(y_rk, t)
 data = {'Vnmh':y_rk,
         't':t,
         'sigma':0,
         'mu':10}
-sio.savemat(('E:\\Code\\stochastic HH model\\result\\deterministic_noise_mu%d_sigma%d_%d.mat.mat'%(10, 0, i)),data)
-#%% stocastic step I = 10
+fld = os.getcwd()
+result_folder = os.path.join(fld, "result")
+if not os.path.exists(result_folder):
+    os.makedirs(result_folder)
+sio.savemat(os.path.join(result_folder, 'deterministic_noise_mu%d_sigma%d_%d.mat.mat'%(10, 0, i)),data)
+#%% stocastic, I = 10
 for j in range(6):
     vm = []
     n = []
     mh = []
     for i in range(10):
-        y_rk, t = stocastic_HH.euler([stocastic_HH.vmp_hh,
-                                            stocastic_HH.np_hh, 
-                                            stocastic_HH.mhp_hh],
+        IStim_Params = {
+            'stim_i': True,
+            'i': 10,
+        }
+        y_rk, t = stochastic_HH.euler([stochastic_HH.vmp_hh,
+                                            stochastic_HH.np_hh, 
+                                            stochastic_HH.mhp_hh],
                                             start = 0, stop = 250, step = 0.01,
-                                            initial_values = [0.0, np.asarray([3600,0,0,0,0]), np.asarray([12000,0,0,0,0,0,0,0])])
+                                            initial_values = [0.0, np.asarray([3600,0,0,0,0]), np.asarray([12000,0,0,0,0,0,0,0])], **IStim_Params)
         vm.append(np.asarray(y_rk[0]))
         n.append(np.transpose(np.asarray(y_rk[1])))
         mh.append(np.transpose(np.asarray(y_rk[2])))
@@ -266,22 +309,8 @@ for j in range(6):
             'n': [n],
             'mh': [mh],
             't':t}
-    sio.savemat(('E:\\Code\\stochastic HH model\\result\\stochastic_noise_mu%d_sigma%d_%d.mat'%(10, 0, j)),data)
+    sio.savemat(os.path.join(result_folder, 'E:\\Code\\stochastic HH model\\result\\stochastic_noise_mu%d_sigma%d_%d.mat'%(10, 0, j)),data)
 
-#%% stichastic simplified matrix form, I = 10
-NNa = 12000
-NK = 3600
-y_rk, t = stochastic_HH2_matrix.euler([stochastic_HH2_matrix.vmp_hh,
-                                    stochastic_HH2_matrix.np_hh,
-                                    stochastic_HH2_matrix.mp_hh,
-                                    stochastic_HH2_matrix.hp_hh],
-                                    start = 0, stop = 100, step = 0.01,
-                                    initial_values = [0.0, 0.0, 0.0,0.0])
-vm=np.asarray(y_rk[0])
-n=np.transpose(np.asarray(y_rk[1]))
-m=np.transpose(np.asarray(y_rk[2]))
-h=np.asarray(y_rk[3])
-plot_stocastic(y_rk, t)
 #%% noisy inputs
 sigma = 7
 mu = 10
@@ -290,6 +319,10 @@ tau = [1,3,5,10,15,20,25]
 for j in range(6):
     noisy_input(mu, sigma, tau, j)
 
+#%% waveform inputs
+data = sio.loadmat(os.path.join(os.getcwd(), 'input', 'NMDAwaveform.mat'))
+I = data["noise_i"]/6*6.7
+waveform_input(I)
 
     
     

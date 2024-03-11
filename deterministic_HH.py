@@ -266,12 +266,24 @@ def ip_hh(t_c, dt = 0.01, **kwargs):
     None.
 
     """
+
+    try:
+        i_bias = kwargs['i']
+    except KeyError:
+        i_bias = 0
+    try:
+        stim_start = kwargs['stim_start']
+    except KeyError:
+        stim_start = 0
     try:
         stim_wave = kwargs['i_waveform']
-    except():
-        return 0
-    idx = int(np.floor(t_c/dt))
-    return stim_wave[idx]
+    except KeyError:
+        return i_bias
+    if (t_c>=stim_start) and (t_c<stim_start+len(stim_wave)*dt):
+        idx = int(np.floor((t_c-stim_start)/dt))
+        return stim_wave[idx] + i_bias
+    else:
+        return i_bias
 
 # def ip_hh(t_c, **kwargs):
 #     """

@@ -20,12 +20,13 @@ list of unit and default parameters:
     gl_bar = 0.3mS/cm^2
 """
 import sys
-sys.path.insert(1, 'E:\\Code\\stochastichh_python')
+import os
+sys.path.insert(1, os.getcwd())
 
 import numpy as np
 import matplotlib.pyplot as plt
 import deterministic_HH
-import stocastic_HH
+import stochastic_HH
 import scipy.io as sio
 from scipy.stats import norm
 from numpy.random import RandomState
@@ -145,9 +146,9 @@ plot_deterministic(y_rk, t)
 NNa = 12000
 NK = 3600
 i = 0
-y_rk, t = stocastic_HH.euler([stocastic_HH.vmp_hh,
-									stocastic_HH.np_hh, 
-									stocastic_HH.mhp_hh],
+y_rk, t = stochastic_HH.euler([stochastic_HH.vmp_hh,
+									stochastic_HH.np_hh, 
+									stochastic_HH.mhp_hh],
 									start = 0, stop = 250, step = 0.01,
 									initial_values = [0.0, np.asarray([NK,0,0,0,0]), np.asarray([NNa,0,0,0,0,0,0,0])])
 plot_stocastic(y_rk, t)

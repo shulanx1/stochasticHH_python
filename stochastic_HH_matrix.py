@@ -312,11 +312,18 @@ def ip_hh(t_c, dt = 0.01, **kwargs):
 
     """
     try:
+        stim_start = kwargs['stim_start']
+    except():
+        stim_start = 0
+    try:
         stim_wave = kwargs['i_waveform']
     except():
         return 0
-    idx = int(np.floor(t_c/dt))
-    return stim_wave[idx]
+    if (t_c>=stim_start) and (t_c<stim_start+len(stim_wave)*dt):
+        idx = int(np.floor((t_c-stim_start)/dt))
+        return stim_wave[idx]
+    else:
+        return 0
 
 # def ip_hh(t_c, **kwargs):
 #     """
